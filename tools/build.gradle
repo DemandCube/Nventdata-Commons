@@ -1,0 +1,10 @@
+archivesBaseName = 'tools'
+
+eclipse {
+  project {
+    name = 'tools'
+  }
+}
+
+dependencies {
+}
