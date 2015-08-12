@@ -3,21 +3,22 @@ package com.nvent.tool.message;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.nvent.util.text.TabularFormater;
 
 public class BitSetMessageTracker {
-  private int expectNumOfMessage ;
-  private Map<String, BitSetPartitionMessageTracker> partitions = new HashMap<>();
+  private int expectNumOfMessagePerPartition ;
+  private TreeMap<String, BitSetPartitionMessageTracker> partitions = new TreeMap<>();
   
   public BitSetMessageTracker(int expectNumOfMessage) {
-    this.expectNumOfMessage = expectNumOfMessage;
+    this.expectNumOfMessagePerPartition = expectNumOfMessage;
   }
   
   synchronized public void log(String partition, int index) {
     BitSetPartitionMessageTracker pTracker = partitions.get(partition) ;
     if(pTracker == null) {
-      pTracker = new BitSetPartitionMessageTracker(expectNumOfMessage);
+      pTracker = new BitSetPartitionMessageTracker(expectNumOfMessagePerPartition);
       partitions.put(partition, pTracker);
     }
     pTracker.log(index);;
