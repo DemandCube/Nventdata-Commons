@@ -18,9 +18,9 @@ public class DataStreamWriter {
   }
 
   public void write(Message message, long timeout) throws InterruptedException {
-    if(lostRandom.nextDouble() <= lostRatio) return;
+    if(lostRandom.nextDouble() < lostRatio) return;
     queue.offer(message, timeout, TimeUnit.MILLISECONDS);
-    if(duplicatedRandom.nextDouble() <= duplicatedRatio) {
+    if(duplicatedRandom.nextDouble() < duplicatedRatio) {
       queue.offer(message, timeout, TimeUnit.MILLISECONDS);
     }
   }
