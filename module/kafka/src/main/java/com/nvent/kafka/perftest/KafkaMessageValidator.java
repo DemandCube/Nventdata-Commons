@@ -30,7 +30,7 @@ public class KafkaMessageValidator {
     messageTracker = new BitSetMessageTracker(expectNumOfMessagePerPartition) ;
     kafkaConnector = 
         new KafkaMessageConsumerConnector("KafkaMessageValidator", zkConnect).
-        withConsumerTimeoutMs(1000).
+        withConsumerTimeoutMs(10000).
         connect();
    
     sumDeliveryTime = new AtomicLong();

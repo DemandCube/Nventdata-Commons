@@ -108,6 +108,7 @@ public class PerfTest {
   }
   
   public static void main(String[] args) throws Exception {
+    long start = System.currentTimeMillis() ;
     PerfTestConfig config = new PerfTestConfig(args) ;
     KafkaMessageGenerator messageGenerator = 
       new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
@@ -119,14 +120,13 @@ public class PerfTest {
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
    
-    if(config.flinkJobManagerHost != null) {
-      Thread.sleep(60000);
-    }
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, 2, config.numOfMessagePerPartition);
     validator.run();
     validator.waitForTermination(60000);
     System.out.println("Perf Test Validator Report:") ;
     System.out.println(validator.getTrackerReport()) ;
+    long execTime = System.currentTimeMillis() - start ;
+    System.out.println("Execute Time: " + execTime + "ms");
   }
 }
