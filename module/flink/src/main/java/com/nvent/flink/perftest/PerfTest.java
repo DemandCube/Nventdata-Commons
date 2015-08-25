@@ -36,15 +36,11 @@ public class PerfTest {
       env = StreamExecutionEnvironment.getExecutionEnvironment();
       env.setParallelism(3);
     }
-    KafkaStreamFunction<Message> kafkaStreamFunc = 
-      new KafkaStreamFunction<Message>("PerfTest", config.zkConnect, config.topicIn, Message.class) {
-      
-      public void beforeCollect(Message mObj) {
-        mObj.setStartDeliveryTime(System.currentTimeMillis());
-      }
-    };
     
-    DataStream<Message> messageStream  = env.addSource(kafkaStreamFunc);
+    KafkaMessageStreamFunction kafkaMessageStreamFunc = 
+      new KafkaMessageStreamFunction("PerfTest", config.zkConnect, config.topicIn, Message.class) ;
+    
+    DataStream<Message> messageStream  = env.addSource(kafkaMessageStreamFunc);
     
     DataStream<Message> flattenStream = 
         messageStream.
@@ -52,15 +48,7 @@ public class PerfTest {
         every(Count.of(100)).   //trigger base on the number of elements
         flatten();
     
-    OutputSelector<Message> outSelector = new OutputSelector<Message>() {
-      @Override
-      public Iterable<String> select(Message value) {
-        ArrayList<String> names = new ArrayList<>();
-        names.add(value.getPartition());
-        names.add("all");
-        return names;
-      }
-    };
+    MessageOutputSelector outSelector = new MessageOutputSelector() ;
     
     SplitDataStream<Message> split = flattenStream.split(outSelector);
     for(int i = 0; i < config.numOPartition; i++) {
@@ -69,16 +57,54 @@ public class PerfTest {
     }
     
     DataStream<Message> all = split.select("all");
-    KafkaSinkFunction<Message> kafkaAllSink = new KafkaSinkFunction<Message>("perftestOut", config.kafkaConnect, config.topicOut) {
-      public void invoke(Message message) throws Exception {
-        message.setEndDeliveryTime(System.currentTimeMillis());
-        super.invoke(message);
-      }
-    };
+    
+    KafkaSinkFunction<Message> kafkaAllSink = 
+      new MessageKafkaSinkFunction("perftestOut", config.kafkaConnect, config.topicOut) ;
     all.addSink(kafkaAllSink);
 
     //execute program
     env.execute("Perf Test");
+  }
+  
+  static public class KafkaMessageStreamFunction extends KafkaStreamFunction<Message> {
+    private static final long serialVersionUID = 1L;
+
+    public KafkaMessageStreamFunction() {} 
+
+    public KafkaMessageStreamFunction(String name, String zkConnect, String topic, Class<Message> type) {
+      super("PerfTest", zkConnect, topic, type);
+    }
+
+    public void beforeCollect(Message mObj) {
+      mObj.setStartDeliveryTime(System.currentTimeMillis());
+    }
+  }
+  
+  static public class MessageOutputSelector implements OutputSelector<Message> {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Iterable<String> select(Message value) {
+      ArrayList<String> names = new ArrayList<>();
+      names.add(value.getPartition());
+      names.add("all");
+      return names;
+    }
+  };
+    
+  static public class MessageKafkaSinkFunction extends KafkaSinkFunction<Message> {
+    private static final long serialVersionUID = 1L;
+
+    public MessageKafkaSinkFunction() {} 
+    
+    public MessageKafkaSinkFunction(String name, String kafkaConnect, String topic) {
+      super(name, kafkaConnect, topic);
+    }
+    
+    public void invoke(Message message) throws Exception {
+      message.setEndDeliveryTime(System.currentTimeMillis());
+      super.invoke(message);
+    }
   }
   
   public static void main(String[] args) throws Exception {

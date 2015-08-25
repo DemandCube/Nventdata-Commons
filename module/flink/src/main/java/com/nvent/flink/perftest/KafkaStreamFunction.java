@@ -21,6 +21,8 @@ public class KafkaStreamFunction<T> extends RichSourceFunction<T> implements Res
   private Class<T> type;
   transient private KafkaMessageConsumerConnector kafkaConnector;
   
+  public KafkaStreamFunction() {} 
+  
   public KafkaStreamFunction(String name, String zkConnect, String topic, Class<T> type) {
     this.name      = name;
     this.zkConnect = zkConnect;
