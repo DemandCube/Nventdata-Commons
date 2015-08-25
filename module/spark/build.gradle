@@ -1,0 +1,12 @@
+archivesBaseName = 'module.spark'
+
+eclipse {
+  project {
+    name = 'module.spark'
+  }
+}
+
+dependencies {
+  compile group: 'org.apache.spark', name: 'spark-core_2.11', version: '1.4.1'
+  compile group: 'org.apache.spark', name: 'spark-streaming_2.11', version: '1.4.1'
+}

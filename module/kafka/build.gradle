@@ -1,0 +1,13 @@
+archivesBaseName = 'module.kafka-0.8.2.0'
+
+eclipse {
+  project {
+    name = 'module.kafka-0.8.2.0'
+  }
+}
+
+dependencies {
+  compile project(':tools')
+  compile project(':module/zookeeper')
+  compile group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
+}

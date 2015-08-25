@@ -1,0 +1,86 @@
+Hi Steve,
+
+I go through various storm, flink, storm document, various post and comment. Here are my thoughts about the frameworks and common rules. 
+
+Storm: 
+
+- Storm engine is a realtime streaming process. 
+- In order to archive the realtime process you will need a dedicated executor at each node of each stream(spout or bolt), as the message is received, it is processed immediately and forward to the next bolt. 
+- An ack is sent back to the previous bolt or source that it has been processed. The source keep a backup of the message and discard the message once it receives the ack. The problem is in a busy system, a bolt can take more time to process the message and the ack take more time to go back to the source and it cause the timeout problem and the source resend the message that cause the duplication. 
+- Storm has a very low throughput compare to spark streaming or fink
+
+Spark
+
+- The spark has a very interesting RDD concept. RDD stand for resilient distributed dataset which mean each set of data is stored on a reliable storage before it is processed. the RDD has many built in like map, filter, join... to help the user to filter, transform... the data. The transformed data is again stored as a RDD for the further process.
+
+- In order to allow the parallel processing, I believe that RDD structure must be splittable and each split is assigned to a task. If a task fail, the task will be reassigned to an other executor or worker like the way hadoop map task work. 
+
+- In order to archive the near realtime streaming, Spark introduce the mini batch or micro batch concept which I believe a small set of data is retrieved from a stream base on the time period or size. The small data set is saved as the mini or micro RDD and processed with the sparkngin.
+
+- Batching is always more reliable and easier(much easier) to implement.
+
+- If you choose the HDFS or any equivalent storage media, you can avoid the problem such slow connection, timeout... and hence your implementation is more reliable.
+
+- Batching is always faster and have the higher throughput. The bigger batch size, the higher throughput since you have less commit and ack. But if you push the system to behave as the real time wich mean you have to reduce the period and the batch size, in this case each batch can contain only one or few messages and it will degrade the performance as the engine has to spend more time to switch between the batches and tasks. 
+
+- The micro batch strategy will not deliver the real time processing when the input is faster than the physical system can handle. In this case the messages will be queue and the client is not away about the delay. For the realtime processing system, if the system is busy, the client will get a timeout or a failed ack.
+
+Flink:
+
+- Flink has almost similar features set as spark.
+- Flink retrieve the a set of data from the stream and store to a durable media as spark. I think the main different is flink forward the collection or dataset  to the operator or node immediately. This design require a dedicate executor at each operator or node and an ack to confirm each dataset is send back in the background. With this design, the system will need a queue(kafka) to balance the input for the case that input is faster or the client will get a timeout exception.
+- Steve's reference article does not mention about the performance throughput compare to spark, but it is significant faster compare to storm. The article only mention the throughput is high for spark and medium to high (Depends on throughput of distributed transactional store) for flink
+
+Our Scribengin: 
+
+- We have the scribengin that act as the master to manage the dataflows.
+- Each dataflow can process data from a source and output the data to multiple sinks. In order to create a workflow, we have to chain multiple dataflow to create a workflow. This design is hard to optimize since the dataflow do not know about each other and if one fail, due to network connection for example. The other dataflow still keep polling the data from the other dataflow. Unlike spark for flink, I believe that it use a coordinator at the workflow level.
+- We focus on the sink, source implementation to reliability move the data from one point to the other, but the fact is we can only make it reliable with HDFS or other batch storage the like S3 or Kafka since we can implement commit and rollback our self. For the other sink, source type like , hbase , cassandra, elasticsearch... We cannot modify their code to support commit and rollback. But for the database, we may use the record id for the deduplication.
+
+I consider that spark and flink is more powerful design. It has built-in data transformation such map, filter, join... which allow you to analyze or convert the raw data to a structured data and store the structured data into other big data such hbase, elasticsearch. But it will have the same data duplication as we have.
+
+
+Here are the Steve article and some interesting post that I found:
+
+#Steve suggested article http://data-artisans.com/high-throughput-low-latency-and-exactly-once-stream-processing-with-apache-flink/
+
+
+#ref http://stackoverflow.com/questions/24119897/apache-spark-vs-apache-storm
+Apache Spark is an in-memory distributed data analysis platform-- primarily targeted at speeding up batch analysis jobs, iterative machine learning jobs, interactive query and graph processing.
+
+One of Spark's primary distinctions is its use of RDDs or Resilient Distributed Datasets. RDDs are great for pipelining parallel operators for computation and are, by definition, immutable, which allows Spark a unique form of fault tolerance based on lineage information. If you are interested in, for example, executing a Hadoop MapReduce job much faster, Spark is a great option (although memory requirements must be considered).
+
+Apache Storm is focused on stream processing or what some call complex event processing. Storm implements a fault tolerant method for performing a computation or pipelining multiple computations on an event as it flows into a system. One might use Storm to transform unstructured data as it flows into a system into a desired format.
+
+Storm and Spark are focused on fairly different use cases. The more "apples-to-apples" comparison would be between Storm and Spark Streaming. Since Spark's RDDs are inherently immutable, Spark Streaming implements a method for "batching" incoming updates in user-defined time intervals that get transformed into their own RDDs. Spark's parallel operators can then perform computations on these RDDs. This is different from Storm which deals with each event individually.
+
+One key difference between these two technologies is that Spark performs Data-Parallel computations while Storm performs Task-Parallel computations. Either design makes tradeoffs that are worth knowing. I would suggest checking out these links.
+
+
+
+#ref http://stackoverflow.com/questions/28082581/what-is-the-differences-between-apache-spark-and-apache-flink
+
+At first what do they have in common? Flink and Spark are both general-purpose data processing platforms and top level projects of the Apache Software Foundation (ASF). They have a wide field of application and are usable for dozens of big data scenarios. Thanks to expansions like SQL queries (Spark: Spark SQL, Flink: MRQL), Graph processing (Spark: GraphX, Flink: Spargel (base) and Gelly(library)), machine learning (Spark: MLlib, Flink: Flink ML will be out Q1 2015) and stream processing (Spark Streaming, Flink Streaming). Both are capable of running in standalone mode, yet many are using them on top of Hadoop (YARN, HDFS). They share a strong performance due to their in memory nature.
+
+However, the way they achieve this variety and the cases they are specialized on differ.
+
+Differences:
+
+Flink is optimized for cyclic or iterative processes by using iterative transformations on collections. This is achieved by an optimization of join algorithms, operator chaining and reusing of partitioning and sorting. However, Flink is also a strong tool for batch processing. Flink streaming processes data streams as true streams, i.e., data elements are immediately "pipelined" though a streaming program as soon as they arrive. This allows to perform flexible window operations on streams.
+
+Spark on the other hand is based on resilient distributed datasets (RDDs). This (mostly) in-memory datastructure gives the power to sparks functional programming paradigm. It is capable of big batch calculations by pinning memory. Spark streaming wraps data streams into mini-batches, i.e., it collects all data that arrives within a certain period of time and runs a regular batch program on the collected data. While the batch program is running, the data for the next mini-batch is collected.
+
+Will Flink replace Hadoop?
+
+No, it will not. Hadoop consists of different parts:
+
+HDFS - Hadoop Distributed Filesystem
+YARN - Yet Another Resource Negotiator (or Resource Manager)
+MapReduce - The batch processing Framework of Hadoop
+HDFS and YARN are still necessary as integral part of BigData clusters. Those two are building the base for other distributed technologies like distributed query engines or distributed databases. The main use-case for MapReduce is batch processing while Flink is designed for iterative processing. So in general those two can co-exist.
+
+#Other sources
+In short: Apache Flink is a streaming engine that can also do batches. Apache Spark is a batch engine that emulates streaming by microbatches. So at its core, Flink is more efficient in terms of low latency
+
+
+In fact, the use-cases of Spark and Flink overlap a bit. However, the technology used under the hood is quite different. Flink shares a lot of similarities with relational DBMS. Data is serialized in byte buffers and processed a lot in binary representation. This also allows for fine-grained memory control.Flink uses a pipelined processing model and it has a cost-based optimizer that selects execution strategies and avoids expensive partitioning and sorting steps. Moreover, Flink features a special kind of iterations (delta-iterations) that can significantly reduce the amount of computations as iterations go on (the vertex-centric computing model of Pregel / Giraph is a special kind of that).

@@ -1,1 +1,7 @@
 include 'tools'
+
+include 'module/zookeeper'
+include 'module/kafka'
+include 'module/spark'
+include 'module/flink'
+include 'module/storm'

@@ -3,6 +3,8 @@ package com.nvent.tool.message.mock;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.nvent.tool.message.Message;
+
 public class DataStreamReader {
   private LinkedBlockingQueue<Message> queue;
 

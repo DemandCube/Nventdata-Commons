@@ -1,9 +1,11 @@
-package com.nvent.tool.message.mock;
+package com.nvent.tool.message;
 
 public class Message {
   //partition or stream name or id
   private String  partition;
   private int     trackId ;
+  private long    startDeliveryTime;
+  private long    endDeliveryTime;
   private byte[]  key ;
   private byte[]  data;
   
@@ -26,9 +28,26 @@ public class Message {
   public int    getTrackId() { return trackId; }
   public void   setTrackId(int trackId) { this.trackId = trackId; }
 
+  public long getStartDeliveryTime() { return startDeliveryTime; }
+  public void setStartDeliveryTime(long startDeliveryTime) { 
+    this.startDeliveryTime = startDeliveryTime; 
+  }
+
+  public long getEndDeliveryTime() { return endDeliveryTime; }
+  public void setEndDeliveryTime(long endDeliveryTime) {
+    this.endDeliveryTime = endDeliveryTime;
+  }
+
   public byte[] getKey() { return key; }
   public void   setKey(byte[] key) { this.key = key; }
 
   public byte[] getData() { return data; }
   public void   setData(byte[] data) { this.data = data; }
+  
+  public String toString() {
+    StringBuilder b = new StringBuilder() ;
+    b.append("partition=").append(partition).append(", ").
+      append("trackId=").append(trackId);
+    return b.toString();
+  }
 }

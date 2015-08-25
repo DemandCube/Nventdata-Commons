@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.nvent.tool.message.BitSetMessageTracker;
+import com.nvent.tool.message.Message;
 
 public class ValidateMessageUnitTest {
   @Test
@@ -35,13 +36,12 @@ public class ValidateMessageUnitTest {
     generatorService.awaitTermination(5, TimeUnit.MINUTES);
     validatorService.awaitTermination(5, TimeUnit.MINUTES);
  
-    System.out.println("Message Generator:"); ;
+    System.out.println("Message Generator:");
     System.out.println(generateTracker.getFormatedReport());
     
-    System.out.println("Message Validator:"); ;
+    System.out.println("Message Validator:");
     System.out.println(validateTracker.getFormatedReport());
   }
-  
   
   static public class MessageStreamGenerator implements Runnable {
     private BitSetMessageTracker tracker;

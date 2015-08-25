@@ -1,7 +1,6 @@
 package com.nvent.tool.message;
 
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 

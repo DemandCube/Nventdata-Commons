@@ -1,0 +1,67 @@
+package com.nvent.flink.perftest;
+
+import java.util.concurrent.TimeUnit;
+
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.typeutils.GenericTypeInfo;
+import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
+import org.apache.flink.streaming.api.functions.source.ParallelSourceFunction;
+import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
+
+import com.nvent.kafka.consumer.KafkaMessageConsumerConnector;
+import com.nvent.kafka.consumer.MessageConsumerHandler;
+import com.nvent.util.JSONSerializer;
+
+public class KafkaStreamFunction<T> extends RichSourceFunction<T> implements ResultTypeQueryable<T>, ParallelSourceFunction<T> {
+  private static final long serialVersionUID = 1L;
+
+  private String   name;
+  private String   zkConnect;
+  private String   topic;
+  private Class<T> type;
+  transient private KafkaMessageConsumerConnector kafkaConnector;
+  
+  public KafkaStreamFunction(String name, String zkConnect, String topic, Class<T> type) {
+    this.name      = name;
+    this.zkConnect = zkConnect;
+    this.topic     = topic ;
+    this.type      = type ;
+  }
+  
+  
+  @Override
+  public void run(final SourceContext<T> ctx) throws Exception {
+    kafkaConnector = 
+        new KafkaMessageConsumerConnector(name, zkConnect).
+        withConsumerTimeoutMs(1000).
+        connect();
+   
+    MessageConsumerHandler handler = new MessageConsumerHandler() {
+      @Override
+      public void onMessage(String topic, byte[] key, byte[] message) {
+        T obj = JSONSerializer.INSTANCE.fromBytes(message, type);
+        beforeCollect(obj);
+        ctx.collect(obj);
+      }
+    };
+    kafkaConnector.consume(topic, handler, 1);
+    kafkaConnector.awaitTermination(60000, TimeUnit.MILLISECONDS);
+  }
+  
+  public void beforeCollect(T mObj) {
+  }
+  
+  @Override
+  public void cancel() {
+    if(kafkaConnector != null) {
+      kafkaConnector.close();
+      kafkaConnector = null;
+    }
+  }
+
+
+  @Override
+  public TypeInformation<T> getProducedType() {
+    return new GenericTypeInfo<T>(type);
+  }
+}

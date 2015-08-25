@@ -2,6 +2,8 @@ package com.nvent.tool.message.mock;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.nvent.tool.message.Message;
+
 public class DataStream {
   private int                          streamId;
   private double                       duplicatedRatio = 0.01;

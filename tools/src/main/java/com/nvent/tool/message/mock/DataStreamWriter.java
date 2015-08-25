@@ -4,6 +4,8 @@ import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.nvent.tool.message.Message;
+
 public class DataStreamWriter {
   private double                       duplicatedRatio = 0.01;
   private double                       lostRatio       = 0.01;
