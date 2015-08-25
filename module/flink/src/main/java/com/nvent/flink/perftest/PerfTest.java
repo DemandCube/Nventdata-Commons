@@ -34,8 +34,8 @@ public class PerfTest {
       env = StreamExecutionEnvironment.createRemoteEnvironment(host, port, parallelism, jarFiles);
     } else {
       env = StreamExecutionEnvironment.getExecutionEnvironment();
+      env.setParallelism(3);
     }
-    env.setParallelism(3);
     KafkaStreamFunction<Message> kafkaStreamFunc = 
       new KafkaStreamFunction<Message>("PerfTest", config.zkConnect, config.topicIn, Message.class) {
       
