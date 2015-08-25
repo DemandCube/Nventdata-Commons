@@ -37,6 +37,9 @@ public class PerfTestConfig {
   @Parameter(names = "--flink-jar-files", description = "Flink Jar Files")
   public String flinkJarFiles ;
   
+  @Parameter(names = "--flink-parallelism", description = "Flink Job Manager Port")
+  public int flinkParallelism = 2;
+  
   public PerfTestConfig(String[] args) {
     new JCommander(this, args);
   }

@@ -27,10 +27,11 @@ public class PerfTest {
     //set up the execution environment
     StreamExecutionEnvironment env = null ;
     if(config.flinkJobManagerHost != null) {
-      String[] jarFiles = config.flinkJarFiles.split(",") ;
-      String   host     = config.flinkJobManagerHost;
-      int      port     = config.flinkJobManagerPort;
-      env = StreamExecutionEnvironment.createRemoteEnvironment(host, port, 5, jarFiles);
+      String[] jarFiles    = config.flinkJarFiles.split(",") ;
+      String   host        = config.flinkJobManagerHost;
+      int      port        = config.flinkJobManagerPort;
+      int      parallelism = config.flinkParallelism;
+      env = StreamExecutionEnvironment.createRemoteEnvironment(host, port, parallelism, jarFiles);
     } else {
       env = StreamExecutionEnvironment.getExecutionEnvironment();
     }
