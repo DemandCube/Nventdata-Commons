@@ -28,6 +28,15 @@ public class PerfTestConfig {
   @Parameter(names = "--output-path", description = "Output Path")
   public String outputPath  =  "build/perftest";
   
+  @Parameter(names = "--flink-job-manager-host", description = "Flink Job Manager Host")
+  public String flinkJobManagerHost ;
+  
+  @Parameter(names = "--flink-job-manager-port", description = "Flink Job Manager Port")
+  public int flinkJobManagerPort ;
+  
+  @Parameter(names = "--flink-jar-files", description = "Flink Jar Files")
+  public String flinkJarFiles ;
+  
   public PerfTestConfig(String[] args) {
     new JCommander(this, args);
   }

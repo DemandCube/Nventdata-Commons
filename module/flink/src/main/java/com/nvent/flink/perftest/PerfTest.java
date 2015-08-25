@@ -24,8 +24,16 @@ public class PerfTest {
   }
   
   public void run() throws Exception {
-  //set up the execution environment
-    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    //set up the execution environment
+    StreamExecutionEnvironment env = null ;
+    if(config.flinkJobManagerHost != null) {
+      String[] jarFiles = config.flinkJarFiles.split(",") ;
+      String   host     = config.flinkJobManagerHost;
+      int      port     = config.flinkJobManagerPort;
+      env = StreamExecutionEnvironment.createRemoteEnvironment(host, port, 5, jarFiles);
+    } else {
+      env = StreamExecutionEnvironment.getExecutionEnvironment();
+    }
     env.setParallelism(3);
     KafkaStreamFunction<Message> kafkaStreamFunc = 
       new KafkaStreamFunction<Message>("PerfTest", config.zkConnect, config.topicIn, Message.class) {
