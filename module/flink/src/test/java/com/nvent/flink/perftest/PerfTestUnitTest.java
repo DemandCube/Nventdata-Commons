@@ -37,7 +37,7 @@ public class PerfTestUnitTest {
       "--zk-connect", zkServer.getConnectString(),
       "--kafka-connect", kafkaServer.getConnectString(),
       "--num-of-partition", "2",
-      "--num-of-message-per-partition", "25000",
+      "--num-of-message-per-partition", "1000000",
       "--message-size", "512",
       "--output-path", "build/perftest"
     };

@@ -121,10 +121,11 @@ public class PerfTest {
     if(config.flinkJobManagerHost != null) {
       Thread.sleep(15000);
     }
+    
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, 2, config.numOfMessagePerPartition);
     validator.run();
-    validator.waitForTermination(360000);
+    validator.waitForTermination(3600000);
     
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
