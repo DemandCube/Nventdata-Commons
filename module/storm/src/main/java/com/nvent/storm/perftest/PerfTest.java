@@ -1,38 +1,36 @@
 package com.nvent.storm.perftest;
 
+import com.nvent.kafka.perftest.KafkaMessageGenerator;
+import com.nvent.kafka.perftest.KafkaMessageValidator;
 import com.nvent.tool.message.Message;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 
 public class PerfTest {
-  final static public String IN_TOPIC  = "perftest.in";
-  final static public String OUT_TOPIC = "perftest.out";
+  private PerfTestConfig config ;
   
-  private String zkConnect    = "127.0.0.1:2181";
-  private String kafkaConnect = "127.0.0.1:9092";
-  private String inTopic      =  IN_TOPIC;
-  private String outTopic     =  OUT_TOPIC;
-  
-  public PerfTest(String[] args) {
+  public PerfTest(PerfTestConfig config ) {
+    this.config = config ;
   }
   
   private TopologyBuilder createTopologyBuilder() {
     TopologyBuilder builder = new TopologyBuilder();
     KafkaTopicSpout<Message> messageSpout = 
-        new KafkaTopicSpout<Message>("PerfTestSpout", zkConnect, inTopic, Message.class);
+        new KafkaTopicSpout<Message>("PerfTestSpout", config.zkConnect, config.topicIn, Message.class);
     builder.setSpout("spout", messageSpout, 5);
     builder.setBolt("split",  new SplitStream(), 5).shuffleGrouping("spout");
     
-    SaveStreamToKafka saveP0 = new SaveStreamToKafka("save.partition-0", kafkaConnect, "partition-0") ;
-    builder.setBolt("save.partition-0", saveP0, 5).shuffleGrouping("split", "partition-0");
+    for(int i = 0; i < config.numOPartition; i++) {
+      SaveStreamToKafka saveP = 
+        new SaveStreamToKafka("save.partition-" + i, config.kafkaConnect, "partition-" + i) ;
+      builder.setBolt("save.partition-" + i, saveP, 5).shuffleGrouping("split", "partition-" + i);
+    }
     
-    SaveStreamToKafka saveP1 = new SaveStreamToKafka("save.partition-1", kafkaConnect, "partition-1") ;
-    builder.setBolt("save.partition-1", saveP1, 5).shuffleGrouping("split", "partition-1");
-
-    SaveStreamToKafka saveAll = new SaveStreamToKafka("save.all", kafkaConnect, outTopic) ;
+    SaveStreamToKafka saveAll = new SaveStreamToKafka("save.all", config.kafkaConnect, config.topicOut) ;
     builder.setBolt("save.all", saveAll, 5).shuffleGrouping("split", "all");
 
     return builder;
@@ -46,6 +44,47 @@ public class PerfTest {
     cluster.submitTopology("perftest", conf, topology);
   }
   
+  public void submit() throws Exception {
+    System.setProperty("storm.jar", config.stormJarFiles);
+    Config conf = new Config();
+    conf.put(Config.NIMBUS_HOST, config.stormNimbusHost);
+    conf.setNumWorkers(10);
+    conf.setMaxSpoutPending(5000);
+    TopologyBuilder builder = createTopologyBuilder();
+    StormTopology topology = builder.createTopology();
+    StormSubmitter.submitTopologyWithProgressBar("PerfTest", conf, topology);
+  }
+  
   static public void main(String[] args) throws Exception {
+    PerfTestConfig config = new PerfTestConfig(args);
+
+    KafkaMessageGenerator messageGenerator = 
+      new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
+    messageGenerator.run();
+    messageGenerator.waitForTermination(36000000);
+    
+    LocalCluster localCluster = null;
+    
+    PerfTest perfTest = new PerfTest(config);
+    if(config.stormNimbusHost == null) {
+      localCluster = new LocalCluster("localhost", new Long(2181));
+      perfTest.submit(localCluster);
+    } else {
+      perfTest.submit() ;
+    }
+    
+    Thread.sleep(15000);
+
+    System.out.println("Perf Test Generator Report:") ;
+    System.out.println(messageGenerator.getTrackerReport()) ;
+    
+    KafkaMessageValidator validator =
+      new KafkaMessageValidator(config.zkConnect, config.topicOut, config.numOPartition, config.numOfMessagePerPartition);
+    validator.run();
+    validator.waitForTermination(3600000);
+    System.out.println("Perf Test Validator Report:") ;
+    System.out.println(validator.getTrackerReport()) ;
+    
+    if(localCluster != null) localCluster.shutdown();
   }
 }

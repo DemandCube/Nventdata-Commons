@@ -6,10 +6,55 @@ eclipse {
   }
 }
 
+project.ext {
+  releaseDir = "${buildDir}/release"
+}
+
+configurations {
+  deployJars {
+    transitive = false
+  }
+}
+
 dependencies {
   compile project(':module/zookeeper')
   compile project(':module/kafka')
-  compile project(':module/flink')
 
   compile group: 'org.apache.storm', name: 'storm-core', version: '0.9.5'
+  compile group: 'com.beust', name: 'jcommander', version: '1.35'
+
+  deployJars project(':tools')
+  deployJars project(':module/kafka')
+  deployJars group: 'com.beust', name: 'jcommander', version: '1.35'
+  deployJars group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
+  deployJars group: 'org.apache.kafka', name: 'kafka-clients', version: "0.8.2.0"
+  deployJars group: 'com.101tec', name: 'zkclient', version: '0.3'
+  deployJars group: 'com.yammer.metrics', name: 'metrics-core', version: '2.2.0'
+  deployJars group: 'org.apache.storm', name: 'storm-core', version: '0.9.5'
+}
+
+task release(dependsOn: 'build') << {
+  println "\n\n"
+  println "*************************************************"
+  println "Build release for ${name} and deploy to ${releaseDir}"
+  println "*************************************************"
+
+  println "Copy the app dependency library"
+  configurations.deployJars.each { File file -> 
+    copy {
+      from file
+      into "${releaseDir}/storm/libs"
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}/storm/libs"
+  }
+
+  def appHome = "src/app";
+  copy {
+    from appHome
+      into "${releaseDir}/storm"
+  }
 }
