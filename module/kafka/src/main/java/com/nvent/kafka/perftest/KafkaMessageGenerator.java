@@ -73,7 +73,7 @@ public class KafkaMessageGenerator {
         writer.send(topic, message, 5000);
         generatorTracker.log(partition, i);
         long count = counter.incrementAndGet();
-        if(count % 5000 == 0) {
+        if(count % 10000 == 0) {
           System.out.println("Message Generator Progress " + count + " messages");
         }
       }

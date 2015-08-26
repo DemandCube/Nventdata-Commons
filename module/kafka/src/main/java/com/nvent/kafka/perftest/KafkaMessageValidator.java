@@ -43,7 +43,7 @@ public class KafkaMessageValidator {
         long count = messageCount.incrementAndGet();
         long deliveryTime = mObj.getEndDeliveryTime() - mObj.getStartDeliveryTime();
         sumDeliveryTime.addAndGet(deliveryTime);
-        if(count % 5000 == 0) {
+        if(count % 10000 == 0) {
           System.out.println("Message Validator Progress " + count + " messages");
         }
       }

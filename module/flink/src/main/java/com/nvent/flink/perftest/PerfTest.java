@@ -136,10 +136,6 @@ public class PerfTest {
     PerfTest perfTest = new PerfTest(config);
     perfTest.run();
     
-    if(config.flinkJobManagerHost != null) {
-      Thread.sleep(15000);
-    }
-    
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, 2, config.numOfMessagePerPartition);
     validator.run();
