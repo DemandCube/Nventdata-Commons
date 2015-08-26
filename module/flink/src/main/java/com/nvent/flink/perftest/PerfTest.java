@@ -59,8 +59,8 @@ public class PerfTest {
 
     DataStream<Message> flattenStream = 
         messageStream.
-        window(Time.of(10, TimeUnit.MILLISECONDS)). //trigger base on the time window
-        every(Count.of(100)).   //trigger base on the number of elements
+        window(Time.of(1000, TimeUnit.MILLISECONDS)). //trigger base on the time window
+        every(Count.of(10000)).   //trigger base on the number of elements
         flatten();
     
     MessageOutputSelector outSelector = new MessageOutputSelector() ;

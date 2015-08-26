@@ -31,9 +31,7 @@ public class KafkaSinkFunction<IN> extends RichSinkFunction<IN> implements SinkF
 
   @Override
   public void close() throws Exception {
-    if(writer != null) {
-      writer.close();
-    }
+    if(writer != null) writer.close();
   }
   
   public void invoke(IN value) throws Exception {
