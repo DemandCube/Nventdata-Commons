@@ -1,6 +1,8 @@
 package com.nvent.flink.perftest;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.flink.core.fs.FileSystem.WriteMode;
@@ -27,10 +29,22 @@ public class PerfTest {
   public void run() throws Exception {
     //set up the execution environment
     StreamExecutionEnvironment env = null ;
-    if(config.flinkJobManagerHost != null) {
-      String[] jarFiles    = config.flinkJarFiles.split(",") ;
+    if(config.flinkJobManagerHost != null || config.flinkYarPropFile != null) {
       String   host        = config.flinkJobManagerHost;
       int      port        = config.flinkJobManagerPort;
+      
+      if(config.flinkYarPropFile != null) {
+        Properties props = new Properties() ;
+        props.load(new FileInputStream(config.flinkYarPropFile));;
+        String connectUrl = props.getProperty("jobManager");
+        if(connectUrl != null) {
+          String[] pair = connectUrl.split(":") ;
+          host = pair[0];
+          port = Integer.parseInt(pair[1]);
+        }
+      }
+      
+      String[] jarFiles    = config.flinkJarFiles.split(",") ;
       int      parallelism = config.flinkParallelism;
       env = StreamExecutionEnvironment.createRemoteEnvironment(host, port, parallelism, jarFiles);
     } else {

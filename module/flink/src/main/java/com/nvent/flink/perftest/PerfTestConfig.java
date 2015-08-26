@@ -27,6 +27,9 @@ public class PerfTestConfig {
   
   @Parameter(names = "--output-path", description = "Output Path")
   public String outputPath  =  "build/perftest";
+
+  @Parameter(names = "--flink-yarn-prop-file", description = "Flink Job Manager Host")
+  public String flinkYarPropFile ;
   
   @Parameter(names = "--flink-job-manager-host", description = "Flink Job Manager Host")
   public String flinkJobManagerHost ;
