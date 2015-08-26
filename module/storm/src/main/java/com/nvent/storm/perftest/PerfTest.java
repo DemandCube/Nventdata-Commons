@@ -47,8 +47,9 @@ public class PerfTest {
   public void submit() throws Exception {
     System.setProperty("storm.jar", config.stormJarFiles);
     Config conf = new Config();
+    conf.setDebug(true);
     conf.put(Config.NIMBUS_HOST, config.stormNimbusHost);
-    conf.setNumWorkers(10);
+    conf.setNumWorkers(3);
     conf.setMaxSpoutPending(15000);
     TopologyBuilder builder = createTopologyBuilder();
     StormTopology topology = builder.createTopology();
@@ -75,7 +76,7 @@ public class PerfTest {
     }
     
     
-    Thread.sleep(60000);
+    Thread.sleep(30000);
 
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
