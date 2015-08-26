@@ -14,6 +14,7 @@ import org.apache.flink.streaming.api.windowing.helper.Time;
 import com.nvent.kafka.perftest.KafkaMessageGenerator;
 import com.nvent.kafka.perftest.KafkaMessageValidator;
 import com.nvent.tool.message.Message;
+import com.nvent.util.JSONSerializer;
 
 public class PerfTest {
   
@@ -110,6 +111,9 @@ public class PerfTest {
   public static void main(String[] args) throws Exception {
     long start = System.currentTimeMillis() ;
     PerfTestConfig config = new PerfTestConfig(args) ;
+    
+    System.out.println(JSONSerializer.INSTANCE.toString(config));
+    
     KafkaMessageGenerator messageGenerator = 
       new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
     messageGenerator.setMessageSize(config.messageSize);
