@@ -10,8 +10,6 @@ import org.junit.Test;
 import com.neverwinterdp.zookeeper.server.EmbededZKServer;
 import com.nvent.kafka.server.EmbededKafkaServer;
 
-import backtype.storm.LocalCluster;
-
 public class PerfTestUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");

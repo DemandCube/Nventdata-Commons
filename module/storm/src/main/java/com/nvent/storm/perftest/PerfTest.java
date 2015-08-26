@@ -50,7 +50,7 @@ public class PerfTest {
     conf.setDebug(true);
     conf.put(Config.NIMBUS_HOST, config.stormNimbusHost);
     conf.setNumWorkers(3);
-    conf.setMaxSpoutPending(15000);
+    conf.setMaxSpoutPending(30000);    
     TopologyBuilder builder = createTopologyBuilder();
     StormTopology topology = builder.createTopology();
     StormSubmitter.submitTopologyWithProgressBar(config.stormTopologyName, conf, topology);
@@ -58,12 +58,16 @@ public class PerfTest {
   
   static public void main(String[] args) throws Exception {
     PerfTestConfig config = new PerfTestConfig(args);
+    long start = System.currentTimeMillis() ;
     System.out.println(PerfTest.class.getName() + "Start Generating The Messages");
     KafkaMessageGenerator messageGenerator = 
       new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
     messageGenerator.run();
     messageGenerator.waitForTermination(36000000);
+    long generatorExecTime = System.currentTimeMillis() - start ;
+    System.out.println("Message Generator Run In: " + generatorExecTime + "ms") ;
     
+    start = System.currentTimeMillis() ;
     System.out.println(PerfTest.class.getName() + "Start Submit And Launch PerfTest On The Storm Cluster");
     LocalCluster localCluster = null;
     
@@ -75,8 +79,7 @@ public class PerfTest {
       perfTest.submit() ;
     }
     
-    
-    Thread.sleep(30000);
+    if(config.stormNimbusHost != null) Thread.sleep(30000);
 
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
@@ -86,8 +89,16 @@ public class PerfTest {
       new KafkaMessageValidator(config.zkConnect, config.topicOut, config.numOPartition, config.numOfMessagePerPartition);
     validator.run();
     validator.waitForTermination(3600000);
+    
+    System.out.println("Perf Test Generator Report:") ;
+    System.out.println(messageGenerator.getTrackerReport()) ;
+    
     System.out.println("Perf Test Validator Report:") ;
     System.out.println(validator.getTrackerReport()) ;
+    
+    long execTime = System.currentTimeMillis() - start ;
+    System.out.println("Message Generator Run In: " + generatorExecTime + "ms") ;
+    System.out.println("PerfTest And Validator Run In: " + execTime  + "ms") ;
     
     if(localCluster != null) localCluster.shutdown();
   }
