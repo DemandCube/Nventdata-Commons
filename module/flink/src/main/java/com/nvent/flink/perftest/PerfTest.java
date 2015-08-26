@@ -56,7 +56,7 @@ public class PerfTest {
       new KafkaMessageStreamFunction("PerfTest", config.zkConnect, config.topicIn, Message.class) ;
     
     DataStream<Message> messageStream  = env.addSource(kafkaMessageStreamFunc);
-    
+
     DataStream<Message> flattenStream = 
         messageStream.
         window(Time.of(10, TimeUnit.MILLISECONDS)). //trigger base on the time window
@@ -109,7 +109,7 @@ public class PerfTest {
     
   static public class MessageKafkaSinkFunction extends KafkaSinkFunction<Message> {
     private static final long serialVersionUID = 1L;
-
+    
     public MessageKafkaSinkFunction() {} 
     
     public MessageKafkaSinkFunction(String name, String kafkaConnect, String topic) {
@@ -132,10 +132,18 @@ public class PerfTest {
       new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
     messageGenerator.setMessageSize(config.messageSize);
     messageGenerator.run();
+    messageGenerator.waitForTermination(3600000);
+    long generatorExecTime = System.currentTimeMillis() - start ;
     
+    System.out.println("Message Generator Run In: " + generatorExecTime + "ms") ;
+    
+    start = System.currentTimeMillis() ;
     PerfTest perfTest = new PerfTest(config);
     perfTest.run();
+    long perfTestExecTime = System.currentTimeMillis() - start ;
+    System.out.println("PerfTest Run In: " + perfTestExecTime  + "ms") ;
     
+    start = System.currentTimeMillis() ;
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, 2, config.numOfMessagePerPartition);
     validator.run();
@@ -146,7 +154,10 @@ public class PerfTest {
     
     System.out.println("Perf Test Validator Report:") ;
     System.out.println(validator.getTrackerReport()) ;
-    long execTime = System.currentTimeMillis() - start ;
-    System.out.println("Execute Time: " + execTime + "ms");
+    long validatorExecTime = System.currentTimeMillis() - start ;
+    
+    System.out.println("PerfTest Run In: " + perfTestExecTime  + "ms") ;
+    System.out.println("Message Generator Run In: " + generatorExecTime + "ms") ;
+    System.out.println("Message Validator Run In: " + validatorExecTime + "ms");
   }
 }
