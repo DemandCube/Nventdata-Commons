@@ -35,7 +35,7 @@ public class KafkaStreamFunction<T> extends RichSourceFunction<T> implements Res
   public void run(final SourceContext<T> ctx) throws Exception {
     kafkaConnector = 
         new KafkaMessageConsumerConnector(name, zkConnect).
-        withConsumerTimeoutMs(5000).
+        withConsumerTimeoutMs(10000).
         connect();
    
     MessageConsumerHandler handler = new MessageConsumerHandler() {
