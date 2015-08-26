@@ -49,7 +49,7 @@ public class PerfTest {
     Config conf = new Config();
     conf.put(Config.NIMBUS_HOST, config.stormNimbusHost);
     conf.setNumWorkers(10);
-    conf.setMaxSpoutPending(5000);
+    conf.setMaxSpoutPending(15000);
     TopologyBuilder builder = createTopologyBuilder();
     StormTopology topology = builder.createTopology();
     StormSubmitter.submitTopologyWithProgressBar(config.stormTopologyName, conf, topology);
@@ -74,7 +74,8 @@ public class PerfTest {
       perfTest.submit() ;
     }
     
-    Thread.sleep(15000);
+    
+    Thread.sleep(60000);
 
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
