@@ -57,12 +57,13 @@ public class PerfTest {
   
   static public void main(String[] args) throws Exception {
     PerfTestConfig config = new PerfTestConfig(args);
-
+    System.out.println(PerfTest.class.getName() + "Start Generating The Messages");
     KafkaMessageGenerator messageGenerator = 
       new KafkaMessageGenerator(config.kafkaConnect, config.topicIn, config.numOPartition, config.numOfMessagePerPartition);
     messageGenerator.run();
     messageGenerator.waitForTermination(36000000);
     
+    System.out.println(PerfTest.class.getName() + "Start Submit And Launch PerfTest On The Storm Cluster");
     LocalCluster localCluster = null;
     
     PerfTest perfTest = new PerfTest(config);
@@ -78,6 +79,7 @@ public class PerfTest {
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
     
+    System.out.println(PerfTest.class.getName() + "Start Launching The Message Validator");
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, config.numOPartition, config.numOfMessagePerPartition);
     validator.run();
