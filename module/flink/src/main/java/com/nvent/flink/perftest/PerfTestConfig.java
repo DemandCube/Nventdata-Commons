@@ -43,6 +43,13 @@ public class PerfTestConfig {
   @Parameter(names = "--flink-parallelism", description = "Flink Job Manager Port")
   public int flinkParallelism = 2;
   
+  @Parameter(names = "--flink-window-period-ms", description = "Flink Window Period")
+  public long flinkWindowPeriod = 1000;
+  
+  @Parameter(names = "--flink-window-size", description = "Flink Window Size")
+  public int flinkWindowSize = 10000;
+  
+  
   public PerfTestConfig(String[] args) {
     new JCommander(this, args);
   }
