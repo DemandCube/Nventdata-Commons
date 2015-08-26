@@ -59,7 +59,7 @@ public class KafkaMessageGenerator {
     public void run() {
       try {
         execute() ;
-      } catch (Exception e) {
+      } catch(Throwable e) {
         e.printStackTrace();
       }
     }

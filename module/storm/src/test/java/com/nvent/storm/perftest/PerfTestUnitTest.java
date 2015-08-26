@@ -19,7 +19,7 @@ public class PerfTestUnitTest {
   
   private  EmbededZKServer    zkServer ;
   private  EmbededKafkaServer kafkaServer ;
-  private  LocalCluster cluster ;
+
   @Before
   public void setup() throws Exception {
     FileUtils.deleteDirectory(new File("build/perftest"));
