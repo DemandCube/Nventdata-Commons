@@ -3,6 +3,7 @@ package com.nvent.kafka.perftest;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.nvent.kafka.producer.DefaultKafkaWriter;
 import com.nvent.tool.message.BitSetMessageTracker;
@@ -16,6 +17,7 @@ public class KafkaMessageGenerator {
   private int                  messageSize             = 128;
   private ExecutorService      executorService;
   private BitSetMessageTracker generatorTracker;
+  private AtomicLong           counter = new AtomicLong();
   
   public KafkaMessageGenerator(String kafkaConnect, String topic, int numOfExecutor, int numOfMessagePerExecutor) {
     this.kafkaConnect = kafkaConnect;
@@ -70,8 +72,13 @@ public class KafkaMessageGenerator {
         message.setStartDeliveryTime(System.currentTimeMillis());
         writer.send(topic, message, 5000);
         generatorTracker.log(partition, i);
+        long count = counter.incrementAndGet();
+        if(count % 5000 == 0) {
+          System.out.println("Message Generator Progress " + count + " messages");
+        }
       }
       writer.close();
+      System.out.println("Message Generator Progress " + counter.get() + " messages");
     }
   }
 }

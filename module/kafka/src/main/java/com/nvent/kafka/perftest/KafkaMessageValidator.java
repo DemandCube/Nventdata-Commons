@@ -40,9 +40,12 @@ public class KafkaMessageValidator {
       public void onMessage(String topic, byte[] key, byte[] message) {
         Message mObj = JSONSerializer.INSTANCE.fromBytes(message, Message.class);
         messageTracker.log(mObj.getPartition(), mObj.getTrackId());
-        messageCount.incrementAndGet();
+        long count = messageCount.incrementAndGet();
         long deliveryTime = mObj.getEndDeliveryTime() - mObj.getStartDeliveryTime();
         sumDeliveryTime.addAndGet(deliveryTime);
+        if(count % 5000 == 0) {
+          System.out.println("Message Validator Progress " + count + " messages");
+        }
       }
     };
     kafkaConnector.consume(topic, handler, numOfExecutor);
@@ -50,6 +53,7 @@ public class KafkaMessageValidator {
   
   public void waitForTermination(long maxTimeout) throws InterruptedException {
     kafkaConnector.awaitTermination(maxTimeout, TimeUnit.MILLISECONDS);
+    System.out.println("Message Validator Progress " + messageCount.get() + " messages");
   }
   
   public String getTrackerReport() {
