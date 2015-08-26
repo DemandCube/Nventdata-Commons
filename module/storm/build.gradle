@@ -30,7 +30,12 @@ dependencies {
   deployJars group: 'org.apache.kafka', name: 'kafka-clients', version: "0.8.2.0"
   deployJars group: 'com.101tec', name: 'zkclient', version: '0.3'
   deployJars group: 'com.yammer.metrics', name: 'metrics-core', version: '2.2.0'
+
   deployJars group: 'org.apache.storm', name: 'storm-core', version: '0.9.5'
+
+  deployJars group: 'log4j', name: 'log4j', version: '1.2.17'
+  deployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
+  deployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
 }
 
 task release(dependsOn: 'build') << {
