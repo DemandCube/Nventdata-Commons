@@ -31,6 +31,9 @@ public class PerfTestConfig {
   @Parameter(names = "--storm-jar-files", description = "Storm Jar Files")
   public String stormJarFiles ;
   
+  @Parameter(names = "--storm-topology-name", description = "Storm Jar Files")
+  public String stormTopologyName = "PerfTest";
+  
   public PerfTestConfig(String[] args) {
     new JCommander(this, args);
   }

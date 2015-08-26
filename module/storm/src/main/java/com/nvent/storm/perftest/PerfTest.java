@@ -41,7 +41,7 @@ public class PerfTest {
     Config conf = new Config();
     conf.setDebug(true);
     StormTopology topology = builder.createTopology();
-    cluster.submitTopology("perftest", conf, topology);
+    cluster.submitTopology(config.stormTopologyName, conf, topology);
   }
   
   public void submit() throws Exception {
@@ -52,7 +52,7 @@ public class PerfTest {
     conf.setMaxSpoutPending(5000);
     TopologyBuilder builder = createTopologyBuilder();
     StormTopology topology = builder.createTopology();
-    StormSubmitter.submitTopologyWithProgressBar("PerfTest", conf, topology);
+    StormSubmitter.submitTopologyWithProgressBar(config.stormTopologyName, conf, topology);
   }
   
   static public void main(String[] args) throws Exception {
