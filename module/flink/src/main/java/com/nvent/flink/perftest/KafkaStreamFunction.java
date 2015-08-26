@@ -5,14 +5,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.GenericTypeInfo;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
-import org.apache.flink.streaming.api.functions.source.ParallelSourceFunction;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 
 import com.nvent.kafka.consumer.KafkaMessageConsumerConnector;
 import com.nvent.kafka.consumer.MessageConsumerHandler;
 import com.nvent.util.JSONSerializer;
 
-public class KafkaStreamFunction<T> extends RichSourceFunction<T> implements ResultTypeQueryable<T>, ParallelSourceFunction<T> {
+public class KafkaStreamFunction<T> extends RichSourceFunction<T> implements ResultTypeQueryable<T> {
   private static final long serialVersionUID = 1L;
 
   private String   name;
