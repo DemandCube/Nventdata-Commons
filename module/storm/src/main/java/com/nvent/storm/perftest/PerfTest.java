@@ -49,7 +49,7 @@ public class PerfTest {
     Config conf = new Config();
     conf.setDebug(true);
     conf.put(Config.NIMBUS_HOST, config.stormNimbusHost);
-    conf.setNumWorkers(3);
+    conf.setNumWorkers(2 * 3);
     conf.setMaxSpoutPending(30000);    
     TopologyBuilder builder = createTopologyBuilder();
     StormTopology topology = builder.createTopology();
