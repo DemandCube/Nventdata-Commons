@@ -11,6 +11,10 @@ project.ext {
 }
 
 configurations {
+  bundleJars {
+    transitive = false
+  }
+
   deployJars {
     transitive = false
   }
@@ -20,22 +24,32 @@ dependencies {
   compile project(':module/zookeeper')
   compile project(':module/kafka')
 
-  compile group: 'org.apache.storm', name: 'storm-core', version: '0.9.5'
+  compile group: 'org.apache.storm', name: 'storm-core', version: '0.9.3'
   compile group: 'com.beust', name: 'jcommander', version: '1.35'
 
-  deployJars project(':tools')
-  deployJars project(':module/kafka')
-  deployJars group: 'com.beust', name: 'jcommander', version: '1.35'
-  deployJars group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
-  deployJars group: 'org.apache.kafka', name: 'kafka-clients', version: "0.8.2.0"
-  deployJars group: 'com.101tec', name: 'zkclient', version: '0.3'
-  deployJars group: 'com.yammer.metrics', name: 'metrics-core', version: '2.2.0'
+  bundleJars project(':tools')
+  bundleJars project(':module/kafka')
+  bundleJars group: 'com.beust', name: 'jcommander', version: '1.35'
+  bundleJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.5'
+  bundleJars group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
+  bundleJars group: 'org.apache.kafka', name: 'kafka-clients', version: "0.8.2.0"
+  bundleJars group: 'com.101tec', name: 'zkclient', version: '0.3'
+  bundleJars group: 'com.yammer.metrics', name: 'metrics-core', version: '2.2.0'
 
-  deployJars group: 'org.apache.storm', name: 'storm-core', version: '0.9.5'
 
-  deployJars group: 'log4j', name: 'log4j', version: '1.2.17'
+  bundleJars group: 'org.scala-lang', name: 'scala-library', version: '2.10.4'
+
+  bundleJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  bundleJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  bundleJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
+  deployJars group: 'commons-lang', name: 'commons-lang', version: '2.6'
+  deployJars group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+  deployJars group: 'org.yaml', name: 'snakeyaml', version: '1.11'
+  deployJars group: 'org.apache.storm', name: 'storm-core', version: '0.9.3'
+  deployJars group: 'log4j',     name: 'log4j', version: '1.2.17'
   deployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
-  deployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+  deployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.6'
 }
 
 task release(dependsOn: 'build') << {
@@ -57,9 +71,25 @@ task release(dependsOn: 'build') << {
     into "${releaseDir}/storm/libs"
   }
 
-  def appHome = "src/app";
   copy {
-    from appHome
-      into "${releaseDir}/storm"
+    from "src/app"
+    into "${releaseDir}/storm"
+  }
+
+}
+
+task oneJar(type: Jar) {
+  jar {
+    baseName = 'module.storm-all'
+
+    manifest { 
+      attributes "Main-Class": "com.nvent.storm.perftest.PerfTest"
+    }  
+
+    from {
+      configurations.bundleJars.collect { 
+        it.isDirectory() ? it : zipTree(it) 
+      }
+    }
   }
 }

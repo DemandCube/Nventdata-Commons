@@ -47,12 +47,21 @@ JAR_FILES="$JAR_FILES,$APP_DIR/libs/metrics-core-2.2.0.jar"
 
 /opt/hadoop/bin/hdfs dfs -rm -R /tmp/perftest/*
 
+echo "Launch the Flink Yarn Session"
+export HADOOP_HOME=/opt/hadoop 
+$FLINK_HOME/bin/yarn-session.sh -q 
+$FLINK_HOME/bin/yarn-session.sh -d -jm 1024 -n 3 -tm 2048 -s 4
+
+#sleep 15
+
+echo "Run The PerfTest"
 MAIN_CLASS="com.nvent.flink.perftest.PerfTest"
 $JAVACMD -Djava.ext.dirs=$APP_DIR/libs:$FLINK_HOME/lib:$JAVA_HOME/jre/lib/ext $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS \
   --zk-connect zookeeper-1:2181\
   --kafka-connect kafka-1:9092,kafka-2:9092,kafka-3:9092 \
   --num-of-partition 2 \
-  --num-of-message-per-partition 500000 \
+  --num-of-message-per-partition 5000000 \
   --message-size 512 \
   --output-path hdfs://hadoop-master:9000/tmp/perftest \
-  --flink-job-manager-host hadoop-worker-1 --flink-job-manager-port aport  --flink-parallelism 1  --flink-jar-files $JAR_FILES
+  --flink-job-manager-host hadoop-worker-1 --flink-job-manager-port 32332 --flink-yarn-prop-file $FLINK_HOME/conf/.yarn-properties \
+  --flink-parallelism 2 --flink-window-period-ms 1000 --flink-window-size 50000  --flink-jar-files $JAR_FILES

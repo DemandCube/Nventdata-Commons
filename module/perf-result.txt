@@ -1,0 +1,39 @@
+#######Storm###################################################
+
+Perf Test Generator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      0            
+partition-1   5000000   0      0            
+--------------------------------------------
+
+Perf Test Validator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      4982         
+partition-1   5000000   0      4520         
+--------------------------------------------
+
+
+Avg Delivery Time: 106295ms
+Message Generator Run In: 138676ms
+PerfTest And Validator Run In: 3870113ms
+
+###############Flink############################################
+
+Perf Test Generator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      0            
+partition-1   5000000   0      0            
+--------------------------------------------
+
+Perf Test Validator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      53903        
+partition-1   5000000   0      56625        
+--------------------------------------------
+
+
+Avg Delivery Time: 8ms
+PerfTest Run In: 914806ms
+Message Generator Run In: 273432ms
+Message Validator Run In: 119672ms
+
