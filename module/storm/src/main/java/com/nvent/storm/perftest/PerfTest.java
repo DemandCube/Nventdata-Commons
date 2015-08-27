@@ -79,7 +79,7 @@ public class PerfTest {
       perfTest.submit() ;
     }
     
-    if(config.stormNimbusHost != null) Thread.sleep(30000);
+    if(config.stormNimbusHost != null) Thread.sleep(60000);
 
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
