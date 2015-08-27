@@ -1,4 +1,54 @@
-#######Storm###################################################
+## Test Workflow ##
+
+                |-----------------------------------------------------------------------
+                |                Flink or Storm or Scribengin                          |
+                |                                                                      |
+                |                             |---------|                              |
+                |                     |-------| Stream 1|                              |
+                |                     |       | --------|                              |
+  |---------|   |   |------------|    |                                                |
+  |  Kafka  | - |   |  Splitter  |----|       |---------|                              |
+  |---------|   |   |------------|    |-------| Stream 2|                              |
+                |                     |       |---------|                              |
+                |                     |                                                |
+                |                     |       |---------|                              |    |---------|
+                |                     |-------|  All    | ---------------------------- |----|  Kafka  |
+                |                        \    |---------|                              |    |---------|
+                |                         \                                            |
+                |                           \ ...........                              |
+                |                             .    ?    .                              |
+                |                             ...........                              |
+                |                                                                      |
+                |----------------------------------------------------------------------|                     
+
+Test Setup:
+
+1. Generator: Write 10M messages to kafka
+2. PerfTest : Run the flink, storm, scribengin test
+3. Validator: Retrive the messages from kafka and check for lost or duplicated
+
+* The delivery time compute from splitter operatorr to All operator
+
+
+Scribengin is inferior compare to flink:
+
+1. For 10M messages, flink take 870s while scribengin takes 2036s(or 1880s second run)
+
+2. The way scribengin implement and launch the test make scribengin some how slower.
+
+- Flink launch master, request for yarn container , configure the container, task manager waiting for the workflow submit.
+
+- For scribengin, each operator node is an independant dataflow, which require to the yarn manager to allocate the dataflow master , dataflow worker, init dataflow registry.... Some time the request for yarn container is very slow. I think 25% of time is go to the dataflow intialization
+
+3. I believe that flink has a sort of internal queue like kafka. It allows the operator share the same stream of data, maintain the cursor index of each operator.
+
+4. Flink allow the developer define the data stream , operator , wrire the data stream and operator with java code. This can avoid a lot of bug and optimize the performance by caching and reuse the data stream.
+
+5. Flink workflow is a single app while scribengin is multiple independendant dataflow app that pipe together to form a bigger app, so it has less room to optimize number of worker... , executors...
+
+REF: https://flink.apache.org/features.html
+
+## Storm Result ##
 
 Perf Test Generator Report:
 Partition     Expect    Lost   Duplicated   
@@ -17,7 +67,9 @@ Avg Delivery Time: 106295ms
 Message Generator Run In: 138676ms
 PerfTest And Validator Run In: 3870113ms
 
-###############Flink############################################
+## Flink Result ##
+
+Firt Run:
 
 Perf Test Generator Report:
 Partition     Expect    Lost   Duplicated   
@@ -36,4 +88,65 @@ Avg Delivery Time: 8ms
 PerfTest Run In: 914806ms
 Message Generator Run In: 273432ms
 Message Validator Run In: 119672ms
+
+Second Run:
+
+Perf Test Generator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      0            
+partition-1   5000000   0      0            
+--------------------------------------------
+
+Perf Test Validator Report:
+Partition     Expect    Lost   Duplicated   
+partition-0   5000000   0      83042        
+partition-1   5000000   0      76272        
+--------------------------------------------
+
+
+Avg Delivery Time:        30ms
+PerfTest Run In:          870137ms
+Message Generator Run In: 186069ms
+Message Validator Run In: 129486ms
+
+
+## Scribengin Result ##
+
+First Run:
+
+Scribengin  dataflow-executor-group  Run In 2036728ms
+Submit The Validator App
+
+Finish The Validator App
+Execute Time: 403555ms
+Generated Report
+----------------------------------------------------------
+Group Id             Num Of Message   Lost   Duplicated   
+vm-log-generator-1   10000000         0      0            
+----------------------------------------------------------
+
+Validate Report
+----------------------------------------------------------
+Group Id             Num Of Message   Lost   Duplicated   
+vm-log-generator-1   10000000         0      0            
+----------------------------------------------------------
+
+Second Run:
+
+Group Executor dataflow-executor-group  Run In 1880201ms
+Submit The Validator App
+
+Finish The Validator App
+Execute Time: 411080ms
+Generated Report
+----------------------------------------------------------
+Group Id             Num Of Message   Lost   Duplicated   
+vm-log-generator-1   10000000         0      0            
+----------------------------------------------------------
+
+Validate Report
+----------------------------------------------------------
+Group Id             Num Of Message   Lost   Duplicated   
+vm-log-generator-1   10000000         0      0            
+----------------------------------------------------------
 

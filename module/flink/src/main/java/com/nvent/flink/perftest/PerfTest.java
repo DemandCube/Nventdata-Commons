@@ -133,8 +133,8 @@ public class PerfTest {
     messageGenerator.setMessageSize(config.messageSize);
     messageGenerator.run();
     messageGenerator.waitForTermination(3600000);
+
     long generatorExecTime = System.currentTimeMillis() - start ;
-    
     System.out.println("Message Generator Run In: " + generatorExecTime + "ms") ;
     
     start = System.currentTimeMillis() ;
