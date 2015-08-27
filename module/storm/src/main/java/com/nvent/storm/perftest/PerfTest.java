@@ -88,7 +88,7 @@ public class PerfTest {
     KafkaMessageValidator validator =
       new KafkaMessageValidator(config.zkConnect, config.topicOut, config.numOPartition, config.numOfMessagePerPartition);
     validator.run();
-    validator.waitForTermination(3600000);
+    validator.waitForTermination(3 * 3600000);
     
     System.out.println("Perf Test Generator Report:") ;
     System.out.println(messageGenerator.getTrackerReport()) ;
