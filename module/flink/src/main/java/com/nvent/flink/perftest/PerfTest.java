@@ -68,7 +68,9 @@ public class PerfTest {
     SplitDataStream<Message> split = flattenStream.split(outSelector);
     for(int i = 0; i < config.numOPartition; i++) {
       DataStream<Message> partition  = split.select("partition-" + i);
-      partition.writeAsText(config.outputPath + "/partition-" + i, WriteMode.OVERWRITE);
+      KafkaSinkFunction<Message> pSink = 
+          new MessageKafkaSinkFunction("perftestOut", config.kafkaConnect, config.topicOut + ".p" + i) ;
+      partition.addSink(pSink);
     }
     
     DataStream<Message> all = split.select("all");
