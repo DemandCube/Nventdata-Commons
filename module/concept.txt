@@ -1,0 +1,83 @@
+## Workflow Diagram ##
+
+                |-----------------------------------------------------------------------
+                |                Flink or Storm or Scribengin                          |
+                |                                                                      |
+                |                             |---------|                              |
+                |                     |-------| Stream 1|--------------?               |
+                |                     |       | --------|                              |
+  |---------|   |   |------------|    |                                                |
+  |  Kafka  | - | - |  Splitter  |----|       |---------|                              |
+  |---------|   |   |------------|    |-------| Stream 2|i-------------?               |
+                |                     |       |---------|                              |
+                |                     |                                                |
+                |                     |       |---------|                              |    |---------|
+                |                     |-------|  All    | ---------------------------- |----|  Kafka  |
+                |                        \    |---------|                              |    |---------|
+                |                         \                                            |
+                |                           \ ...........                              |
+                |                             .    ?    .                              |
+                |                             ...........                              |
+                |                                                                      |
+                |----------------------------------------------------------------------|                     
+
+
+Terminology:
+
+- Data Stream 
+
+- Operator
+
+Model 1
+
+registry
+  scribengin
+    workflows
+      workflow
+        operator-task-queue
+        operators
+          splitter
+            input
+              kafka-input(ref)
+            output
+              splitter-output-internal-queue-stream-1(ref)
+              splitter-output-internal-queue-stream-2(ref)
+              splitter-output-internal-queue-stream-all(ref)
+            operator-task-config
+          stream-1
+            input
+              splitter-output-internal-queue-stream-1(ref)
+            output
+              stream-1-output-internal-queue-stream(ref)
+            operator-task-config
+          stream-2
+            input
+              splitter-output-internal-queue-stream-2(ref)
+            output
+              stream-2-output-internal-queue-stream(ref)
+            operator-task-config
+          stream-all
+            input
+              splitter-output-internal-queue-stream-all(ref)
+            output
+              stream-2-output-internal-queue-stream(ref)
+            operator-task-config
+        streams
+          kafka-input
+            partitions
+              partition-1
+                task-triggers
+                  splitter-operator-write-commit-task-queue - (commit-1, commit-2, commit-3)
+              partition-2
+                task-triggers
+                  splitter-operator-write-commit-task-queue - (commit-1, commit-2, commit-3)
+              partition-3
+                task-triggers
+                  splitter-operator-write-commit-task-queue - (commit-1, commit-2, commit-3)
+              splitter-operator-task-config
+          splitter-output-internal-queue-stream-1
+          splitter-output-internal-queue-stream-2
+          splitter-output-internal-queue-stream-all
+          stream-1-output-internal-queue-stream
+          stream-2-output-internal-queue-stream
+          all-output-kafka-queue-stream
