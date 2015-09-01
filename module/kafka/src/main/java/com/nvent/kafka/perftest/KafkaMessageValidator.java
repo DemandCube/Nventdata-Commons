@@ -14,6 +14,7 @@ public class KafkaMessageValidator {
   private String                        topic;
   private int                           numOfExecutor                  = 1;
   private int                           expectNumOfMessagePerPartition = 100;
+  private long                          consumerTimeout = 10000;
   private KafkaMessageConsumerConnector kafkaConnector;
   private BitSetMessageTracker          messageTracker;
   private AtomicLong sumDeliveryTime = new AtomicLong();
@@ -26,11 +27,15 @@ public class KafkaMessageValidator {
     this.expectNumOfMessagePerPartition = expectNumOfMessagePerPartition;
   }
   
+  public void setConsumerTimeout(long timeout) {
+    this.consumerTimeout = timeout;
+  }
+  
   public void run() throws Exception {
     messageTracker = new BitSetMessageTracker(expectNumOfMessagePerPartition) ;
     kafkaConnector = 
         new KafkaMessageConsumerConnector("KafkaMessageValidator", zkConnect).
-        withConsumerTimeoutMs(10000).
+        withConsumerTimeoutMs(consumerTimeout).
         connect();
    
     sumDeliveryTime = new AtomicLong();

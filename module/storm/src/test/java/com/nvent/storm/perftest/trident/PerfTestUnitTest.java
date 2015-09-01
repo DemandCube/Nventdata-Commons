@@ -1,4 +1,4 @@
-package com.nvent.storm.perftest;
+package com.nvent.storm.perftest.trident;
 
 import java.io.File;
 
@@ -42,10 +42,10 @@ public class PerfTestUnitTest {
       "--zk-connect", zkServer.getConnectString(),
       "--kafka-connect", kafkaServer.getConnectString(),
       "--num-of-partition", "2",
-      "--num-of-message-per-partition", "250000",
+      "--num-of-message-per-partition", "10000",
       "--message-size", "512",
       "--validator-consumer-timeout", "5000"
     };
-    PerfTest.main(args);
+    TridentPerfTest.main(args);
   }
 }

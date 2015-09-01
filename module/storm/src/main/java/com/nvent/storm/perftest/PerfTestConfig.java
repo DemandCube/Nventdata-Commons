@@ -34,6 +34,10 @@ public class PerfTestConfig {
   @Parameter(names = "--storm-topology-name", description = "Storm Jar Files")
   public String stormTopologyName = "PerfTest";
   
+  @Parameter(names = "--validator-consumer-timeout", description = "Storm Jar Files")
+  public long validatorConsumerTimeout = 10000;
+  
+  
   public PerfTestConfig(String[] args) {
     new JCommander(this, args);
   }

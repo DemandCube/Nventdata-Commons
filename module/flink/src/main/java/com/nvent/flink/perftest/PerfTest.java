@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.streaming.api.collector.selector.OutputSelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SplitDataStream;
@@ -56,7 +55,6 @@ public class PerfTest {
       new KafkaMessageStreamFunction("PerfTest", config.zkConnect, config.topicIn, Message.class) ;
     
     DataStream<Message> messageStream  = env.addSource(kafkaMessageStreamFunc);
-
     DataStream<Message> flattenStream = 
         messageStream.
         window(Time.of(config.flinkWindowPeriod, TimeUnit.MILLISECONDS)). //trigger base on the time window
