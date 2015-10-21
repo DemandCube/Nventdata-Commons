@@ -50,7 +50,7 @@ subprojects {
     forkEvery = 1
     ignoreFailures = true
     testLogging.showStandardStreams = true
-
+    exclude 'org/apache/spark/**'
     filter {
       includeTestsMatching "*UnitTest"
     }
